@@ -8,6 +8,9 @@ function createGameStateStore(initState: GameState): GameStateStore {
         getState: (): GameState => subject.getValue(),
         setState: (newState: Partial<GameState>): void => subject.next({ ...subject.getValue(), ...newState }),
         subscribe: (callback: (state: GameState) => void) => subject.subscribe(callback),
+        destroy: (): void => {
+            subject.complete();
+        },
     };
 }
 

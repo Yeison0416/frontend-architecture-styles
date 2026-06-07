@@ -1,13 +1,21 @@
 import 'reset-css';
 import './index.scss';
-import { MemoryGame } from './app/memory-game';
+import { MemoryGamePresenter } from './app/memory-game-presenter';
 
 function game() {
     return {
         run() {
             const appRootNode: HTMLElement = document.getElementById('app-root')! as HTMLElement;
-            const memoryGame = MemoryGame(appRootNode);
-            memoryGame.startGame();
+            const memoryGamePresenter = MemoryGamePresenter(appRootNode);
+
+            memoryGamePresenter.startGame();
+
+            const teardown = (): void => {
+                memoryGamePresenter.destroy();
+            };
+
+            window.addEventListener('pagehide', teardown);
+            window.addEventListener('beforeunload', teardown);
         },
     };
 }
