@@ -1,0 +1,23 @@
+.board {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	&__row {
+		display: flex;
+		gap: 10px;
+	}
+
+	&__cell {
+		border: 1px solid black;
+		height: 100px;
+		width: 100px;
+		transition:
+			background-color 0.5s ease,
+			opacity 0.5s ease;
+
+		&--highlighted {
+			background-color: gray;
+		}
+	}
+}
