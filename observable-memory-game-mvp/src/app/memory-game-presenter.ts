@@ -3,9 +3,9 @@ import template from './memory-game.hbs';
 import { Subscription } from 'rxjs';
 
 import { CellIndex, GameState } from './types/types';
-import { MemoryGamePresenterContract, MessageViewContract } from './types/view-contracts';
+import { BoardViewContract, MemoryGamePresenterContract, MessageViewContract } from './types/view-contracts';
 
-import { Board } from './components/board/board';
+import { BoardView } from './components/board/board-view';
 import { MessageView } from './components/message/message-view';
 
 import { getPatternSequence } from './services/emit-pattern-counter-by-interval';
@@ -19,12 +19,36 @@ export function MemoryGamePresenter(appRootNode: HTMLElement): MemoryGamePresent
 
     const gameStateStore = getGameStateStore(initialGameState());
     const messageView: MessageViewContract = MessageView();
+    const boardView: BoardViewContract = BoardView();
 
     let patternSubscription: Subscription | undefined;
+    let destroyed = false;
 
-    const updateMessageFromState = (state: GameState): void => {
+    const updateViews = (state: GameState): void => {
         if (state.gamePhase === 'SHOW_SEQUENCE' || state.gamePhase === 'GAME_OVER') {
             messageView.showMessage(state.gameMessage.message);
+        }
+
+        if (state.gamePhase === 'SHOW_SEQUENCE' || state.gamePhase === 'USER_TURN') {
+            const currentCellIndex = state.pattern[state.pattern.length - 1];
+            const prevCellIndex = state.pattern[state.pattern.length - 2];
+            const isUserTurn = state.gamePhase === 'USER_TURN';
+
+            boardView.setInteractive(isUserTurn);
+
+            if (currentCellIndex === prevCellIndex) {
+                boardView.highlightCell(currentCellIndex, isUserTurn, true);
+            } else {
+                boardView.highlightCell(currentCellIndex, isUserTurn);
+            }
+        }
+
+        if (state.gamePhase === 'GAME_OVER') {
+            boardView.setInteractive(false);
+        }
+
+        if (state.gamePhase === 'NEXT_LEVEL') {
+            boardView.playLevelTransition();
         }
     };
 
@@ -38,7 +62,7 @@ export function MemoryGamePresenter(appRootNode: HTMLElement): MemoryGamePresent
 
         patternSubscription = getPatternSequence(gameState).subscribe(({ cellIndex, count }) => {
             gameStateStore.setState(getNextGameState(gameStateStore.getState(), cellIndex, count));
-            updateMessageFromState(gameStateStore.getState());
+            updateViews(gameStateStore.getState());
         });
     };
 
@@ -50,7 +74,7 @@ export function MemoryGamePresenter(appRootNode: HTMLElement): MemoryGamePresent
         }
 
         gameStateStore.setState(nextState);
-        updateMessageFromState(gameStateStore.getState());
+        updateViews(gameStateStore.getState());
 
         const { gamePhase } = gameStateStore.getState();
 
@@ -64,14 +88,21 @@ export function MemoryGamePresenter(appRootNode: HTMLElement): MemoryGamePresent
         }
     };
 
-    Board(gameStateStore, onCellClick);
+    boardView.onCellClicked(onCellClick);
 
     return {
         startGame() {
             patternSequence(gameStateStore.getState());
         },
         destroy() {
+            if (destroyed) {
+                return;
+            }
+
+            destroyed = true;
             stopPatternSequence();
+            boardView.destroy();
+            gameStateStore.destroy();
             messageView.destroy();
         },
     };

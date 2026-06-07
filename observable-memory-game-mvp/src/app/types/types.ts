@@ -22,6 +22,7 @@ export type GameStateStore = {
     readonly getState: () => GameState;
     readonly setState: (newState: Partial<GameState>) => void;
     readonly subscribe: (callback: (state: GameState) => void) => Unsubscribe;
+    readonly destroy: () => void;
 };
 
 export type GameState = {

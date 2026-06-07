@@ -398,9 +398,3 @@ MVP boundaries improve **Presenter testability** with **mock views**.
 | `BoardView` interface | types |
 
 ---
-
-## Next steps
-
-1. Read [mvc.md](./mvc.md) side-by-side with this page for the same Memory Game flows.
-2. When ready to implement: refactor [`observable-memory-game-mvp`](../../observable-memory-game-mvp/) — remove store `subscribe` from components; add `memory-game-presenter.ts` with `updateViews`.
-3. Future style: [MVVM](./mvvm.md) *(when documented)* — compare who holds display-oriented state.

@@ -7,7 +7,15 @@ function game() {
         run() {
             const appRootNode: HTMLElement = document.getElementById('app-root')! as HTMLElement;
             const memoryGamePresenter = MemoryGamePresenter(appRootNode);
+
             memoryGamePresenter.startGame();
+
+            const teardown = (): void => {
+                memoryGamePresenter.destroy();
+            };
+
+            window.addEventListener('pagehide', teardown);
+            window.addEventListener('beforeunload', teardown);
         },
     };
 }
