@@ -50,6 +50,36 @@ export function appliedUSerInputGameState(gameState: GameState, cellIndex: CellI
     return {};
 }
 
+export function applyUserCellClick(gameState: GameState, cellIndex: CellIndex): Partial<GameState> {
+    if (gameState.gamePhase !== 'USER_TURN') {
+        return {};
+    }
+
+    const playerInput = [...gameState.playerInput, cellIndex];
+    const index = playerInput.length - 1;
+    const expectedCellIndex = gameState.pattern[index];
+
+    if (cellIndex !== expectedCellIndex) {
+        return {
+            playerInput,
+            gamePhase: 'GAME_OVER',
+            gameMessage: { type: 'GAME_OVER', message: `Game Over! You reached level ${gameState.level}` },
+        };
+    }
+
+    if (playerInput.length === gameState.pattern.length) {
+        return {
+            playerInput,
+            gamePhase: 'NEXT_LEVEL',
+        };
+    }
+
+    return {
+        playerInput,
+        gamePhase: 'USER_TURN',
+    };
+}
+
 export function getNextLevelGameState(gameState: GameState): GameState {
     return {
         ...gameState,
