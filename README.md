@@ -41,7 +41,6 @@ frontend-architecture-styles/
 │   ├── mvc.md
 │   └── mvp.md
 ├── observable-memory-game/       ← MVC
-└── observable-memory-game-mvp/   ← MVP (same codebase until refactor)
+└── observable-memory-game-mvp/   ← MVP
 ```
 
-Personal learning notes (`mind-map.md`, `studying-foundations-in-the-ai-era.md`) may exist locally but are **gitignored** and not pushed to the remote.
