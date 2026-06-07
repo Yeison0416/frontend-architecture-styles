@@ -2,3 +2,7 @@
 node_modules/
 dist/
 *.log
+
+# Personal notes — local only, not published to remote
+mind-map.md
+studying-foundations-in-the-ai-era.md
