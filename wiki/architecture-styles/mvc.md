@@ -329,6 +329,29 @@ Because this project uses **subscriptions** (store, `fromEvent`, pattern service
 
 ---
 
+## MVC development flow (roadmap)
+
+Build order for this style (same Memory Game domain):
+
+1. **types/** → contracts (`GameState`, `GamePhase`, …)
+2. **domain/** → pure rules (+ unit tests)
+3. **state/** → store with `getState` / `setState` / `subscribe`
+4. **services/** → streams/timing *(if needed)*
+5. **memory-game.ts** → Controller: handlers, domain → `setState`
+6. **components/** → View: subscribe to store, render, forward clicks
+7. **Integrate & harden** → lifecycle, a11y, errors, tests
+
+Cross-cutting details by layer:
+
+- [Error handling](#error-handling)
+- [Lifecycle (subscribe & unsubscribe)](#lifecycle-subscribe--unsubscribe)
+- [Accessibility](#accessibility)
+- [Testing](#testing)
+
+Compare with the MVP phased roadmap in [mvp.md](./mvp.md#mvp-development-flow-roadmap).
+
+---
+
 ## Error handling
 
 Errors still respect MVC boundaries: **domain** decides what went wrong in app terms; **Controller** decides what to do about it; **Model (store)** holds error/phase state if the UI must reflect it; **View** shows a safe message; **services** surface technical failures without owning user messaging.

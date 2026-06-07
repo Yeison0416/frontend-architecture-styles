@@ -14,7 +14,7 @@ That folder is a **copy of the MVC app** today; the MVP refactor (passive View, 
 
 This document describes the **same game** with **MVP role assignment**—use it to compare who updates the screen and who sits between Model and View.
 
-For the MVC version, see [mvc.md](./mvc.md). For the step-by-step build order, see [MVP development flow](#mvp-development-flow-roadmap).
+For the step-by-step build order, see [MVP development flow](#mvp-development-flow-roadmap). Compare with [MVC development flow](./mvc.md#mvc-development-flow-roadmap).
 
 ---
 
