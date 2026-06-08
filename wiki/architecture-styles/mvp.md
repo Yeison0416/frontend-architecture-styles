@@ -263,8 +263,8 @@ Mapping lives in **Presenter** (or a small `presenter/view-mapper.ts` helper)—
 | Style | Who updates the screen? |
 |-------|-------------------------|
 | [MVC](./mvc.md) | View (subscribe to store) |
-| **MVP** | **Presenter → View methods** |
-| MVVM | (later) View binds to ViewModel |
+| [MVP](./mvp.md) | Presenter → View methods |
+| [MVVM](./mvvm.md) | View (subscribe to **ViewModel** display state) |
 
 ---
 
