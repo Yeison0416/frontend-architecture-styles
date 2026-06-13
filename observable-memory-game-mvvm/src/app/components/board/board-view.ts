@@ -81,6 +81,14 @@ export function BoardView(boardViewModel: BoardViewModelContract): BoardViewInst
             return;
         }
 
+        // INIT (and other idle phases) emit no highlight data — skip so we don't cancel
+        // an in-flight level transition (MVC board had no branch for INIT either).
+        const hasHighlightUpdate = highlightedCell !== null || flicker || isInteractive;
+
+        if (!hasHighlightUpdate) {
+            return;
+        }
+
         highlightCell(highlightedCell, isInteractive, flicker);
     });
 
