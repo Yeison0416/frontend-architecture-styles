@@ -2,6 +2,6 @@
 
 **Style:** [MVVM (Model–View–ViewModel)](../wiki/architecture-styles/mvvm.md)
 
-**Status:** Copy of `observable-memory-game` (MVC). MVVM refactor (ViewModels, View bindings) not applied yet.
+**Status:** Complete — coordinator, `MessageViewModel`, `BoardViewModel`; Views bind to ViewModels only.
 
-**Compare with MVC:** [observable-memory-game](../observable-memory-game/) · [mvc.md](../wiki/architecture-styles/mvc.md) · [mvp.md](../wiki/architecture-styles/mvp.md)
+**Compare with MVC:** [observable-memory-game](../observable-memory-game/) · [MVP](../observable-memory-game-mvp/) · [mvvm.md](../wiki/architecture-styles/mvvm.md)

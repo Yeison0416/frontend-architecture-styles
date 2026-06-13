@@ -2,26 +2,25 @@ import template from './memory-game.hbs';
 
 import { Subscription } from 'rxjs';
 
-import { CellIndex, GameState } from './types/types';
+import { GamePhase, GameState } from './types/types';
 import { MemoryGameViewModelContract } from './types/view-model-contracts';
 
-import { Board } from './components/board/board';
+import { BoardView } from './components/board/board-view';
 import { MessageView } from './components/message/message-view';
 
 import { getPatternSequence } from './services/emit-pattern-counter-by-interval';
 
 import { getGameStateStore } from './state/game-state-store';
 
+import { BoardViewModel } from './view-models/board-view-model';
 import { MessageViewModel } from './view-models/message-view-model';
 
-import { applyUserCellClick, getNextGameState, getNextLevelGameState, initialGameState } from './domain/rules';
+import { getNextGameState, getNextLevelGameState, initialGameState } from './domain/rules';
 
 export function MemoryGameViewModel(appRootNode: HTMLElement): MemoryGameViewModelContract {
     appRootNode.innerHTML = template();
 
     const gameStateStore = getGameStateStore(initialGameState());
-    const messageViewModel = MessageViewModel(gameStateStore);
-    const messageView = MessageView(messageViewModel);
 
     let patternSubscription: Subscription | undefined;
     let destroyed = false;
@@ -39,17 +38,7 @@ export function MemoryGameViewModel(appRootNode: HTMLElement): MemoryGameViewMod
         });
     };
 
-    const onCellClick = (cellIndex: CellIndex): void => {
-        const nextState = applyUserCellClick(gameStateStore.getState(), cellIndex);
-
-        if (Object.keys(nextState).length === 0) {
-            return;
-        }
-
-        gameStateStore.setState(nextState);
-
-        const { gamePhase } = gameStateStore.getState();
-
+    const handleAfterCellClick = (gamePhase: GamePhase): void => {
         if (gamePhase === 'NEXT_LEVEL') {
             gameStateStore.setState(getNextLevelGameState(gameStateStore.getState()));
             patternSequence(gameStateStore.getState());
@@ -60,7 +49,10 @@ export function MemoryGameViewModel(appRootNode: HTMLElement): MemoryGameViewMod
         }
     };
 
-    Board(gameStateStore, onCellClick);
+    const messageViewModel = MessageViewModel(gameStateStore);
+    const boardViewModel = BoardViewModel(gameStateStore, handleAfterCellClick);
+    const messageView = MessageView(messageViewModel);
+    const boardView = BoardView(boardViewModel);
 
     return {
         startGame() {
@@ -73,6 +65,8 @@ export function MemoryGameViewModel(appRootNode: HTMLElement): MemoryGameViewMod
 
             destroyed = true;
             stopPatternSequence();
+            boardView.destroy();
+            boardViewModel.destroy();
             messageView.destroy();
             messageViewModel.destroy();
             gameStateStore.destroy();

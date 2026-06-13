@@ -9,7 +9,7 @@ Documentation and runnable **Memory Game** examples that implement the same app 
 | [wiki/architecture-styles/](./wiki/architecture-styles/) | One doc per architecture style, same example domain |
 | [observable-memory-game/](./observable-memory-game/) | **MVC** reference implementation (reactive Views subscribe to store) |
 | [observable-memory-game-mvp/](./observable-memory-game-mvp/) | **MVP** reference implementation |
-| [observable-memory-game-mvvm/](./observable-memory-game-mvvm/) | **MVVM** reference implementation *(MVC copy; refactor pending)* |
+| [observable-memory-game-mvvm/](./observable-memory-game-mvvm/) | **MVVM** reference implementation |
 
 ## Architecture styles wiki
 
@@ -45,6 +45,6 @@ frontend-architecture-styles/
 │   └── mvvm.md
 ├── observable-memory-game/       ← MVC
 ├── observable-memory-game-mvp/   ← MVP
-└── observable-memory-game-mvvm/  ← MVVM (MVC copy; refactor pending)
+└── observable-memory-game-mvvm/  ← MVVM
 ```
 
