@@ -1,5 +1,7 @@
 import template from './memory-game.hbs';
 
+import { Subscription } from 'rxjs';
+
 import { CellIndex, GameState } from './types/types';
 
 import { Board } from './components/board/board';
@@ -9,37 +11,49 @@ import { getPatternSequence } from './services/emit-pattern-counter-by-interval'
 
 import { getGameStateStore } from './state/game-state-store';
 
-import { getNextGameState, initialGameState, appliedUSerInputGameState, getNextLevelGameState } from './domain/rules';
+import { applyUserCellClick, getNextGameState, getNextLevelGameState, initialGameState } from './domain/rules';
 
 export function MemoryGame(appRootNode: HTMLElement) {
-    // Render the template
     appRootNode.innerHTML = template();
 
-    // Create the game state store
     const gameStateStore = getGameStateStore(initialGameState());
 
-    // Cell click handler. Communication between Board component and Game State Store
-    const onCellClick = (cellIndex: CellIndex) => {
-        gameStateStore.setState({
-            playerInput: [...gameStateStore.getState().playerInput, cellIndex],
-            gamePhase: 'USER_INPUT_VALIDATION',
+    let patternSubscription: Subscription | undefined;
+
+    const stopPatternSequence = (): void => {
+        patternSubscription?.unsubscribe();
+        patternSubscription = undefined;
+    };
+
+    const patternSequence = (gameState: GameState): void => {
+        stopPatternSequence();
+
+        patternSubscription = getPatternSequence(gameState).subscribe(({ cellIndex, count }) => {
+            gameStateStore.setState(getNextGameState(gameStateStore.getState(), cellIndex, count));
         });
+    };
 
-        gameStateStore.setState(appliedUSerInputGameState(gameStateStore.getState(), cellIndex));
+    const onCellClick = (cellIndex: CellIndex): void => {
+        const nextState = applyUserCellClick(gameStateStore.getState(), cellIndex);
 
-        if (gameStateStore.getState().gamePhase === 'NEXT_LEVEL') {
-            const nextLevelState = getNextLevelGameState(gameStateStore.getState());
-            gameStateStore.setState(nextLevelState);
+        if (Object.keys(nextState).length === 0) {
+            return;
+        }
+
+        gameStateStore.setState(nextState);
+
+        const { gamePhase } = gameStateStore.getState();
+
+        if (gamePhase === 'NEXT_LEVEL') {
+            gameStateStore.setState(getNextLevelGameState(gameStateStore.getState()));
             patternSequence(gameStateStore.getState());
+        }
+
+        if (gamePhase === 'GAME_OVER') {
+            stopPatternSequence();
         }
     };
 
-    const patternSequence = (gameState: GameState) =>
-        getPatternSequence(gameState).subscribe(({ cellIndex, count }) => {
-            gameStateStore.setState(getNextGameState(gameStateStore.getState(), cellIndex, count));
-        });
-
-    // Component instances
     Board(gameStateStore, onCellClick);
     MessageDisplayer(gameStateStore);
 
@@ -47,9 +61,7 @@ export function MemoryGame(appRootNode: HTMLElement) {
         patternSequence(gameStateStore.getState());
     }
 
-    const state = {
-        startGame: startGame,
+    return {
+        startGame,
     };
-
-    return Object.assign({}, state);
 }

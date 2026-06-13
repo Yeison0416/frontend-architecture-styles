@@ -10,6 +10,7 @@ Same game, different architecture styles. Each style has its **own app folder** 
 |-------|------------|---------------|
 | MVC | [`observable-memory-game`](../../observable-memory-game/) | [mvc.md](./mvc.md) |
 | MVP | [`observable-memory-game-mvp`](../../observable-memory-game-mvp/) | [mvp.md](./mvp.md) |
+| MVVM | [`observable-memory-game-mvvm`](../../observable-memory-game-mvvm/) | [mvvm.md](./mvvm.md) |
 
 Reference projects live at the repo root. See [README](../../README.md) for layout and how to run each app.
 
@@ -28,5 +29,6 @@ When comparing architecture styles, keep this domain fixed and ask: **who holds 
 |-------|-----|
 | MVC (Model–View–Controller) | [mvc.md](./mvc.md) |
 | MVP (Model–View–Presenter) | [mvp.md](./mvp.md) |
+| MVVM (Model–View–ViewModel) | [mvvm.md](./mvvm.md) |
 
 <!-- Add links here as new styles are documented. -->
