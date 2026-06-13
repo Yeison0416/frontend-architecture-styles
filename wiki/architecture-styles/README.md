@@ -6,11 +6,21 @@ One page per style. Each page uses the **same example app** so you can compare h
 
 Same game, different architecture styles. Each style has its **own app folder** so you can diff implementations.
 
+### Vanilla track (implemented)
+
 | Style | App folder | Documentation |
 |-------|------------|---------------|
 | MVC | [`observable-memory-game`](../../observable-memory-game/) | [mvc.md](./mvc.md) |
 | MVP | [`observable-memory-game-mvp`](../../observable-memory-game-mvp/) | [mvp.md](./mvp.md) |
 | MVVM | [`observable-memory-game-mvvm`](../../observable-memory-game-mvvm/) | [mvvm.md](./mvvm.md) |
+
+### Framework track (docs only — implement with Angular)
+
+| Style | Documentation |
+|-------|---------------|
+| Flux (unidirectional data flow) | [flux.md](./flux.md) |
+| Smart / Dumb (container–presentational) | [smart-dumb.md](./smart-dumb.md) |
+| Layered / Clean frontend (light) | [layered-clean.md](./layered-clean.md) |
 
 Reference projects live at the repo root. See [README](../../README.md) for layout and how to run each app.
 
@@ -25,10 +35,11 @@ When comparing architecture styles, keep this domain fixed and ask: **who holds 
 
 ## Index
 
-| Style | Doc |
-|-------|-----|
-| MVC (Model–View–Controller) | [mvc.md](./mvc.md) |
-| MVP (Model–View–Presenter) | [mvp.md](./mvp.md) |
-| MVVM (Model–View–ViewModel) | [mvvm.md](./mvvm.md) |
-
-<!-- Add links here as new styles are documented. -->
+| Style | Doc | Vanilla app |
+|-------|-----|-------------|
+| MVC (Model–View–Controller) | [mvc.md](./mvc.md) | Yes |
+| MVP (Model–View–Presenter) | [mvp.md](./mvp.md) | Yes |
+| MVVM (Model–View–ViewModel) | [mvvm.md](./mvvm.md) | Yes |
+| Flux | [flux.md](./flux.md) | Framework project |
+| Smart / Dumb | [smart-dumb.md](./smart-dumb.md) | Framework project |
+| Layered / Clean (light) | [layered-clean.md](./layered-clean.md) | Framework project |

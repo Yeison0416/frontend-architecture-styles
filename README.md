@@ -21,6 +21,8 @@ Start at [wiki/architecture-styles/README.md](./wiki/architecture-styles/README.
 | MVP | [mvp.md](./wiki/architecture-styles/mvp.md) | [observable-memory-game-mvp](./observable-memory-game-mvp/) |
 | MVVM | [mvvm.md](./wiki/architecture-styles/mvvm.md) | [observable-memory-game-mvvm](./observable-memory-game-mvvm/) |
 
+**Framework track** (short docs; implement with Angular): [Flux](./wiki/architecture-styles/flux.md) · [Smart/Dumb](./wiki/architecture-styles/smart-dumb.md) · [Layered/Clean](./wiki/architecture-styles/layered-clean.md)
+
 Both games share the same domain: pattern memory on a 3×3 grid, TypeScript, Handlebars, RxJS, Webpack.
 
 ## Running an example app
@@ -42,7 +44,10 @@ frontend-architecture-styles/
 │   ├── README.md
 │   ├── mvc.md
 │   ├── mvp.md
-│   └── mvvm.md
+│   ├── mvvm.md
+│   ├── flux.md
+│   ├── smart-dumb.md
+│   └── layered-clean.md
 ├── observable-memory-game/       ← MVC
 ├── observable-memory-game-mvp/   ← MVP
 └── observable-memory-game-mvvm/  ← MVVM
