@@ -3,22 +3,28 @@ import template from './memory-game.hbs';
 import { Subscription } from 'rxjs';
 
 import { CellIndex, GameState } from './types/types';
+import { MemoryGameViewModelContract } from './types/view-model-contracts';
 
 import { Board } from './components/board/board';
-import { MessageDisplayer } from './components/message/message-displayer';
+import { MessageView } from './components/message/message-view';
 
 import { getPatternSequence } from './services/emit-pattern-counter-by-interval';
 
 import { getGameStateStore } from './state/game-state-store';
 
+import { MessageViewModel } from './view-models/message-view-model';
+
 import { applyUserCellClick, getNextGameState, getNextLevelGameState, initialGameState } from './domain/rules';
 
-export function MemoryGame(appRootNode: HTMLElement) {
+export function MemoryGameViewModel(appRootNode: HTMLElement): MemoryGameViewModelContract {
     appRootNode.innerHTML = template();
 
     const gameStateStore = getGameStateStore(initialGameState());
+    const messageViewModel = MessageViewModel(gameStateStore);
+    const messageView = MessageView(messageViewModel);
 
     let patternSubscription: Subscription | undefined;
+    let destroyed = false;
 
     const stopPatternSequence = (): void => {
         patternSubscription?.unsubscribe();
@@ -55,13 +61,21 @@ export function MemoryGame(appRootNode: HTMLElement) {
     };
 
     Board(gameStateStore, onCellClick);
-    MessageDisplayer(gameStateStore);
-
-    function startGame() {
-        patternSequence(gameStateStore.getState());
-    }
 
     return {
-        startGame,
+        startGame() {
+            patternSequence(gameStateStore.getState());
+        },
+        destroy() {
+            if (destroyed) {
+                return;
+            }
+
+            destroyed = true;
+            stopPatternSequence();
+            messageView.destroy();
+            messageViewModel.destroy();
+            gameStateStore.destroy();
+        },
     };
 }

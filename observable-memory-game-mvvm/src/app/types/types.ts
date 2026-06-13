@@ -14,10 +14,15 @@ export type GamePhase = 'INIT' | 'SHOW_SEQUENCE' | 'USER_TURN' | 'USER_INPUT_VAL
 
 export type GameMessage = { type: 'GAME_OVER'; message: string } | { type: 'USER_TURN'; message: string } | { type: 'LEVEL_INFO'; message: string };
 
+export type Unsubscribe = {
+    readonly unsubscribe: () => void;
+};
+
 export type GameStateStore = {
     readonly getState: () => GameState;
     readonly setState: (newState: Partial<GameState>) => void;
-    readonly subscribe: (callback: (state: GameState) => void) => void;
+    readonly subscribe: (callback: (state: GameState) => void) => Unsubscribe;
+    readonly destroy: () => void;
 };
 
 export type GameState = {

@@ -1,13 +1,21 @@
 import 'reset-css';
 import './index.scss';
-import { MemoryGame } from './app/memory-game';
+import { MemoryGameViewModel } from './app/memory-game-view-model';
 
 function game() {
     return {
         run() {
             const appRootNode: HTMLElement = document.getElementById('app-root')! as HTMLElement;
-            const memoryGame = MemoryGame(appRootNode);
-            memoryGame.startGame();
+            const viewModelOrchestrator = MemoryGameViewModel(appRootNode);
+
+            viewModelOrchestrator.startGame();
+
+            const teardown = (): void => {
+                viewModelOrchestrator.destroy();
+            };
+
+            window.addEventListener('pagehide', teardown);
+            window.addEventListener('beforeunload', teardown);
         },
     };
 }

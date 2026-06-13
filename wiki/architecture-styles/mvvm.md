@@ -128,9 +128,102 @@ Contrast with **MVC repo**: Board subscribes to `gameStateStore` and reads `game
 
 | | |
 |---|---|
-| **Must have** | Display mappers (store → streams/DTOs); commands for user actions; domain calls + `setState`; service subscription ownership for pattern flow; `destroy()` to unsubscribe store/service. |
+| **Must have** | [Display mappers](#display-mappers) (store → streams/DTOs); commands for user actions; domain calls + `setState`; service subscription ownership for pattern flow; `destroy()` to unsubscribe store/service. |
 | **Must not have** | DOM (`document`, `innerHTML`, `classList`); HTML/templates; duplicating domain rules inline; exposing raw `GameState` to View as the primary binding (defeats the layer). |
-| **Common confusions** | ❌ ViewModel sets CSS classes → **View** binds and paints. ❌ ViewModel skips domain and mutates store fields with validation logic → **domain**. ❌ Ten components, one 800-line ViewModel → split into **BoardViewModel**, **MessageViewModel**, etc. ✅ `message$ = store.pipe(map(state => ...))` → correct. ✅ `onCellClick` calls `applyUserCellClick` → correct command. |
+| **Common confusions** | ❌ ViewModel sets CSS classes → **View** binds and paints. ❌ ViewModel skips domain and mutates store fields with validation logic → **domain**. ❌ Ten components, one 800-line ViewModel → split into **BoardViewModel**, **MessageViewModel**, etc. ❌ Putting mapper logic in the View because “it's just an if on gamePhase” → that belongs in the **mapper**, not the View. ✅ `message$` fed by `mapMessageDisplay(state)` → correct. ✅ `onCellClick` calls `applyUserCellClick` → correct command. |
+
+---
+
+## Display mappers
+
+> **What they are:** A **display mapper** is a **pure function** that translates **Model state** (`GameState`) into **what one View needs to show**—a string, a DTO, or a small object of display fields. It encodes *presentation meaning*, not business rules and not DOM.
+
+```text
+GameState (Model)  ──mapXxxDisplay()──►  Display DTO  ──ViewModel stream──►  View (bind)
+```
+
+### What is a DTO?
+
+**DTO** stands for **Data Transfer Object** — a plain object or type that **carries data between layers**. No behavior, no DOM: just **shape and values**.
+
+In this wiki, a **display DTO** is what a mapper returns: the **UI-oriented** data one View needs, derived from **Model-oriented** `GameState`.
+
+| Layer | Example | Role |
+|-------|---------|------|
+| **Model** | `GameState` — `level`, `pattern`, `gamePhase`, `gameMessage`, … | Source of truth — what the game *is* |
+| **Display DTO** | `string \| null` from `mapMessageDisplay`, or `BoardDisplayState` for the board | What the screen *should show* right now |
+| **View** | Binds to `message$` or `display$` | Renders the DTO |
+
+```ts
+// Model — domain-oriented (many fields the View should not know)
+type GameState = { level, pattern, gamePhase, gameMessage, playerInput, ... };
+
+// Display DTO — UI-oriented (only what BoardView needs)
+type BoardDisplayState = {
+  highlightedCell: CellIndex | null;
+  isInteractive: boolean;
+  flicker: boolean;
+  levelTransition: boolean;
+};
+```
+
+For the message component, the DTO is minimal — just `string | null` — but it is still the same idea: **narrow Model → View-shaped data**.
+
+**Why the term matters:** it marks data as *for passing and display*, not as app truth. The store keeps truth; the mapper produces a DTO; the ViewModel exposes it on a stream; the View renders it. Do not write DTO fields back into the store unless they represent a real domain change.
+
+### Main role
+
+| Question the mapper answers | Who must **not** answer it |
+|-----------------------------|----------------------------|
+| “What text should the message area show *right now*?” | View (no `GameState`), domain (no UI) |
+| “Which cell should look highlighted for the board?” | Same |
+| “Should the board accept clicks?” | Same |
+
+The mapper is the **translation layer** between domain-oriented state and UI-oriented state. It replaces logic that lived in the MVC View subscriber or the MVP Presenter `updateViews`—but **scoped to one component**.
+
+### Example in this repo: `mapMessageDisplay`
+
+Step 1 of the MVVM app implements:
+
+```ts
+// view-models/map-message-display.ts
+function mapMessageDisplay(state: GameState): string | null {
+  if (state.gamePhase === 'SHOW_SEQUENCE' || state.gamePhase === 'GAME_OVER') {
+    return state.gameMessage.message;
+  }
+  return null;
+}
+```
+
+**What it does:**
+
+- **Input:** full `GameState` from the store (level, pattern, phase, messages, …).
+- **Output:** only what **MessageView** cares about—a `string` to render, or `null` (“don't change the message area”).
+- **Rules it encodes (presentation, not domain):** “Only show message text during `SHOW_SEQUENCE` and `GAME_OVER`”—the same filter the old MVC `MessageDisplayer` had in its subscriber.
+
+**What it does *not* do:**
+
+- Validate clicks or decide game over → **domain** (`applyUserCellClick`).
+- Write to the DOM → **MessageView** (binds to `message$`).
+- Subscribe to the store → **MessageViewModel** calls the mapper on each store notification and pushes the result into `message$`.
+
+```text
+setState  →  store notifies MessageViewModel  →  mapMessageDisplay(state)
+          →  message$.next(text)  →  MessageView subscription  →  DOM
+```
+
+### Does every ViewModel need a mapper?
+
+| ViewModel type | Mapper needed? | Notes |
+|----------------|----------------|-------|
+| **Component ViewModel** (Message, Board, …) | **Usually yes** | One mapper (or equivalent `map` in a pipe) per component that derives display from `GameState`. Keeps View dumb and mapping testable. |
+| **Coordinator ViewModel** (`MemoryGameViewModel`) | **Often no display mapper** | Orchestrates pattern service, `startGame`, `destroy`, wiring—may have **commands** but nothing to *show* on its own. |
+| **Trivial 1:1 pass-through** | **Optional separate file** | If display is literally one field (`state.score`), mapping can live inline in the ViewModel—still a mapper *concept*, not always a separate `map-*.ts` file. |
+| **ViewModel with only commands** (no display) | **No** | e.g. a ViewModel that only exposes `onSubmit()` and no `$` stream. |
+
+**Rule of thumb:** If the View binds to derived state from the Model, something must perform **Model → display** translation. That is the mapper's job—either as a named pure function (`mapMessageDisplay`, `mapBoardDisplay`) or an inline `map` in the ViewModel. **Separate files** (`map-message-display.ts`) are recommended when the logic is non-trivial or you want fast unit tests without RxJS or DOM.
+
+**Not one global mapper:** each component ViewModel owns **its** mapping—avoid a single function that returns display state for all ten screens (that recreates the fat Presenter problem).
 
 ---
 
@@ -245,8 +338,9 @@ observable-memory-game-mvvm/src/app/   (target — implement after reading this 
 ├── state/                        → Model (store) — unchanged
 ├── domain/                       → Model (rules) — unchanged
 ├── view-models/
-│   ├── board-view-model.ts       → Board display$ + onCellClick
-│   └── message-view-model.ts     → message$
+│   ├── map-message-display.ts  → Pure mapper (GameState → message text)
+│   ├── board-view-model.ts     → Board display$ + onCellClick
+│   └── message-view-model.ts   → Subscribes to store; feeds message$ via mapper
 ├── components/
 │   ├── board/board-view.ts       → Binds to BoardViewModel; no store
 │   └── message/message-view.ts   → Binds to MessageViewModel; no store
@@ -258,8 +352,20 @@ observable-memory-game-mvvm/src/app/   (target — implement after reading this 
 
 ### ViewModel: mapping store → display (core MVVM skill)
 
+See [Display mappers](#display-mappers) for the full picture. Minimal message example (implemented in Step 1):
+
 ```ts
-// conceptual — BoardViewModel
+// map-message-display.ts — pure mapper
+function mapMessageDisplay(state: GameState): string | null { ... }
+
+// message-view-model.ts — ViewModel wires store → mapper → stream
+store.subscribe(state => messageSubject.next(mapMessageDisplay(state)));
+```
+
+Board ViewModel (Step 2) follows the same pattern with a richer DTO:
+
+```ts
+// conceptual — map-board-display.ts
 function mapBoardDisplay(state: GameState): BoardDisplayState {
   const isUserTurn = state.gamePhase === 'USER_TURN';
   const current = state.pattern[state.pattern.length - 1];
@@ -457,7 +563,8 @@ MVVM boundaries support **ViewModel unit tests** without DOM and **View tests** 
 |------------------|--------|
 | Wrong cell → game over | domain |
 | `onCellClick` → domain → `setState` | ViewModel (command) |
-| `gamePhase === 'USER_TURN'` → `isInteractive` | ViewModel (mapper) |
+| `gamePhase === 'USER_TURN'` → `isInteractive` | ViewModel ([mapper](#display-mappers)) |
+| `mapMessageDisplay(state)` | ViewModel mapper (pure function) |
 | `highlightedCell$.subscribe` → CSS highlight | View (bind) |
 | Flicker delay after ViewModel emits `flicker: true` | View (presentation) |
 | `getPatternSequence` subscribe | ViewModel (coordinator) |
